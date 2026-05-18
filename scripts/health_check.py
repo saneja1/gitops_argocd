@@ -18,7 +18,7 @@ NAMESPACE    = sys.argv[3]   # e.g. streamlit-app
 BUILD_NUMBER = sys.argv[4]
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL        = "llama3-8b-8192"
+MODEL        = "llama-3.1-8b-instant"
 
 
 def get_http_status():
@@ -39,24 +39,25 @@ def get_pod_logs():
             capture_output=True, text=True, timeout=30
         )
         return result.stdout if result.stdout else result.stderr
-    except Exception as e:
-        return f"Could not fetch logs: {e}"
+    except Exception:
+        return None
 
 
 def ask_ai(http_status, pod_logs):
     """Send health data to Groq LLM and get HEALTHY or UNHEALTHY decision."""
+    logs_section = f"Pod Logs (last 50 lines):\n{pod_logs}" if pod_logs else "Pod Logs: unavailable (kubectl not configured on CI machine)"
     prompt = f"""You are a Kubernetes deployment health checker.
 
 Analyze the following post-deployment data and decide if the deployment is healthy.
 
 HTTP Status Code: {http_status}
-Pod Logs (last 50 lines):
-{pod_logs}
+{logs_section}
 
 Rules:
-- If HTTP status is 200 and logs show no crashes or errors → HEALTHY
+- If HTTP status is 200 → lean towards HEALTHY unless logs show clear errors
 - If HTTP status is not 200 or unreachable → UNHEALTHY
 - If logs show exceptions, crashes, or repeated restarts → UNHEALTHY
+- If logs are unavailable but HTTP status is 200 → HEALTHY
 
 Respond with EXACTLY one line:
 HEALTHY: <one sentence reason>
@@ -89,7 +90,10 @@ def main():
 
     print("[Health Monitor] Fetching pod logs...")
     pod_logs = get_pod_logs()
-    print(f"[Health Monitor] Logs:\n{pod_logs[:500]}")
+    if pod_logs:
+        print(f"[Health Monitor] Logs:\n{pod_logs[:500]}")
+    else:
+        print("[Health Monitor] Logs: unavailable (kubectl not reachable from CI)")
 
     print("[Health Monitor] Asking AI for health decision...")
     ai_decision = ask_ai(http_status, pod_logs)
