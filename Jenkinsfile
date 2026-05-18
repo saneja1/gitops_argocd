@@ -64,11 +64,34 @@ pipeline {
             }
         }
 
+        stage('AI Health Check') {
+            steps {
+                withCredentials([string(credentialsId: 'groq-api-key', variable: 'GROQ_API_KEY')]) {
+                    sh "python3 scripts/health_check.py http://8.231.135.180:30095 ${GROQ_API_KEY} streamlit-app ${IMAGE_TAG}"
+                }
+            }
+            post {
+                failure {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-credentials',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )]) {
+                        sh """
+                            git revert HEAD --no-edit
+                            git push https://${GIT_USER}:${GIT_TOKEN}@github.com/saneja1/gitops_argocd.git HEAD:master
+                        """
+                    }
+                    echo "UNHEALTHY: Rolled back to previous image tag via git revert."
+                }
+            }
+        }
+
     }
 
     post {
         success {
-            echo "Build ${IMAGE_TAG} pushed. ArgoCD will deploy it automatically."
+            echo "Build ${IMAGE_TAG} deployed and verified healthy by AI."
         }
         failure {
             echo "Pipeline failed."
