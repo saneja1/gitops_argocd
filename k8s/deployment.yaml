@@ -4,7 +4,9 @@ metadata:
   name: streamlit-app
   namespace: streamlit-app
 spec:
-  replicas: 1
+  replicas: 2
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: streamlit-app
