@@ -1,3 +1,6 @@
+import os
+os._exit(1)  # INTENTIONAL CRASH FOR TESTING - REMOVE AFTER TEST
+
 import streamlit as st
 
 st.set_page_config(page_title="Test Server", layout="centered")
