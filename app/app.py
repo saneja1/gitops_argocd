@@ -1,6 +1,3 @@
-import os
-os._exit(1)  # INTENTIONAL CRASH FOR TESTING - REMOVE AFTER TEST
-
 import streamlit as st
 
 st.set_page_config(page_title="Test Server", layout="centered")
@@ -19,4 +16,4 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("This is a test server - v6")
+st.title("This is a test server - v8")
