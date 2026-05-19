@@ -67,7 +67,7 @@ pipeline {
         stage('AI Health Check') {
             steps {
                 withCredentials([string(credentialsId: 'groq-api-key', variable: 'GROQ_API_KEY')]) {
-                    sh "python3 scripts/health_check.py http://8.231.135.180:30095 ${GROQ_API_KEY} streamlit-app ${IMAGE_TAG}"
+                    sh "python3 scripts/health_check.py http://136.109.92.156:30095 ${GROQ_API_KEY} streamlit-app ${IMAGE_TAG}"
                 }
             }
             post {
