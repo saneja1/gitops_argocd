@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: streamlit-app
-          image: saneja1/streamlit-app:16
+          image: saneja1/streamlit-app:999-broken
           ports:
             - containerPort: 8501
