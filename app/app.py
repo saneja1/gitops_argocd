@@ -17,3 +17,4 @@ st.markdown(
 )
 
 st.title("This is a test server - v6")
+import this_module_does_not_exist
